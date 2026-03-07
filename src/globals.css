@@ -1,0 +1,1410 @@
+/**
+ * ==========================================================================
+ * DELTA DESIGN SYSTEM - Global Styles
+ * ==========================================================================
+ *
+ * This file establishes the complete design system for Delta, including:
+ *   1. Tailwind CSS import
+ *   2. Custom font declarations (Monaspace family)
+ *   3. Design tokens (colors, spacing, shadows)
+ *   4. Theme configurations (light/dark)
+ *   5. Tailwind v4 theme extensions
+ *   6. Base element resets
+ *   7. Reusable utility classes
+ *
+ * DESIGN PRINCIPLES:
+ * ------------------
+ * • Deep Blue (#2A4D88)    → Primary brand, headlines, primary CTAs
+ * • Ocean City (#7C94B8)   → Secondary accent, decorative elements, subtle gradients
+ * • Concerto (#D9D9D8)     → Light surfaces, large backgrounds
+ * • Glacial Salt (#B1BBC8) → Borders, separators, low-contrast text
+ *
+ * USAGE GUIDE:
+ * ------------
+ * Colors:     Use semantic tokens (--primary, --secondary) not raw values
+ * Buttons:    .btn .btn-primary | .btn .btn-secondary | .btn .btn-ghost
+ * Cards:      .card-surface
+ * Inputs:     .input-themed
+ * Headings:   .heading-accent (adds gradient underline)
+ *
+ * TAILWIND UTILITIES:
+ * -------------------
+ * bg-primary, text-primary, border-border, shadow-brand-soft, etc.
+ * All CSS variables are mapped to Tailwind via @theme directive.
+ *
+ * ==========================================================================
+ */
+
+@import "tailwindcss";
+
+/* ==========================================================================
+   1. CUSTOM FONTS - Monaspace Variable Font Family
+   ==========================================================================
+   Monaspace is a superfamily of monospace fonts with 5 distinct styles.
+   All variants support variable font weights (100-900).
+   
+   Usage:
+   - Neon:   Default for code/monospace (neo-grotesque)
+   - Argon:  Balanced, neutral (good for UI)
+   - Krypton: Mechanical, geometric
+   - Radon:  Handwriting style
+   - Xenon:  Wide, spacious
+   ========================================================================== */
+
+@font-face {
+  font-family: 'Monaspace Argon';
+  src: url('/fonts/monaspace/Monaspace Argon Var.woff2') format('woff2'),
+    url('/fonts/monaspace/Monaspace Argon Var.woff') format('woff');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Monaspace Krypton';
+  src: url('/fonts/monaspace/Monaspace Krypton Var.woff2') format('woff2'),
+    url('/fonts/monaspace/Monaspace Krypton Var.woff') format('woff');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Monaspace Neon';
+  src: url('/fonts/monaspace/Monaspace Neon Var.woff2') format('woff2'),
+    url('/fonts/monaspace/Monaspace Neon Var.woff') format('woff');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Monaspace Radon';
+  src: url('/fonts/monaspace/Monaspace Radon Var.woff2') format('woff2'),
+    url('/fonts/monaspace/Monaspace Radon Var.woff') format('woff');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Monaspace Xenon';
+  src: url('/fonts/monaspace/Monaspace Xenon Var.woff2') format('woff2'),
+    url('/fonts/monaspace/Monaspace Xenon Var.woff') format('woff');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ==========================================================================
+   2. DESIGN TOKENS - Raw Color Palette
+   ==========================================================================
+   These are the foundational color values. They remain constant regardless
+   of theme. Semantic tokens (in theme sections) reference these values.
+   ========================================================================== */
+
+:root {
+  /* --- Primary Brand Palette --- */
+  --color-deep-blue: #2A4D88;
+  /* Primary brand color */
+  --color-ocean-city: #7C94B8;
+  /* Secondary accent */
+  --color-concerto: #D9D9D8;
+  /* Light surface */
+  --color-glacial-salt: #B1BBC8;
+  /* Borders & muted elements */
+
+  /* --- Supporting Palette --- */
+  --color-deep-navy: #0F2A44;
+  /* Dark contrast, body text */
+  --color-soft-ink: #4A5D73;
+  /* Secondary text */
+  --color-muted-slate: #7A8898;
+  /* Muted/placeholder text */
+  --color-pure-white: #FFFFFF;
+  /* Pure white */
+  --color-soft-border: #E6E8EC;
+  /* Subtle borders */
+
+  /* --- Semantic Status Colors --- */
+  --color-success: #3E7C59;
+  --color-warning: #C28B00;
+  --color-error: #B44343;
+  --color-info: #4A78C2;
+}
+
+/* ==========================================================================
+   3. LIGHT THEME - Default
+   ==========================================================================
+   Semantic tokens that adapt based on theme. Components should use these
+   tokens (e.g., var(--primary)) rather than raw colors.
+   ========================================================================== */
+
+:root,
+[data-theme="light"] {
+  /* --- Backgrounds & Surfaces --- */
+  --background: var(--color-pure-white);
+  --background-secondary: var(--color-concerto);
+  --background-muted: var(--color-glacial-salt);
+  --background-elevated: var(--color-pure-white);
+  --background-overlay: rgba(15, 42, 68, 0.5);
+
+  /* --- Card (shadcn/ui compatible) --- */
+  --card: var(--color-pure-white);
+  --card-foreground: var(--color-deep-navy);
+
+  /* --- Text / Foreground --- */
+  --foreground: var(--color-deep-navy);
+  --foreground-secondary: var(--color-soft-ink);
+  --foreground-muted: var(--color-muted-slate);
+  --foreground-inverse: var(--color-pure-white);
+
+  /* --- Borders --- */
+  --border: var(--color-soft-border);
+  --border-muted: var(--color-concerto);
+  --border-strong: var(--color-glacial-salt);
+  --border-focus: var(--color-deep-blue);
+
+  /* --- Input (shadcn/ui compatible) --- */
+  --input: var(--color-soft-border);
+
+  /* --- Primary Action (Deep Blue) --- */
+  --primary: var(--color-deep-blue);
+  --primary-foreground: var(--color-pure-white);
+  --primary-hover: var(--color-deep-navy);
+  --primary-active: var(--color-deep-navy);
+
+  /* --- Secondary Action (Ocean City) --- */
+  --secondary: var(--color-ocean-city);
+  --secondary-foreground: var(--color-deep-navy);
+  --secondary-hover: var(--color-glacial-salt);
+  --secondary-active: var(--color-concerto);
+
+  /* --- Accent --- */
+  --accent: var(--color-ocean-city);
+  --accent-foreground: var(--color-deep-navy);
+
+  /* --- Muted / Subtle --- */
+  --muted: var(--color-concerto);
+  --muted-foreground: var(--color-soft-ink);
+
+  /* --- Destructive (shadcn/ui compatible) --- */
+  --destructive: var(--color-error);
+
+  /* --- Semantic States --- */
+  --success: var(--color-success);
+  --success-foreground: var(--color-pure-white);
+  --success-background: rgba(62, 124, 89, 0.1);
+
+  --warning: var(--color-warning);
+  --warning-foreground: var(--color-deep-navy);
+  --warning-background: rgba(194, 139, 0, 0.1);
+
+  --error: var(--color-error);
+  --error-foreground: var(--color-pure-white);
+  --error-background: rgba(180, 67, 67, 0.1);
+
+  --info: var(--color-info);
+  --info-foreground: var(--color-pure-white);
+  --info-background: rgba(74, 120, 194, 0.1);
+
+  /* --- Interactive State Modifiers --- */
+  --hover-opacity: 0.9;
+  --active-opacity: 0.85;
+  --disabled-opacity: 0.5;
+
+  /* --- Focus Ring --- */
+  --ring: var(--color-deep-blue);
+  --ring-offset: var(--color-pure-white);
+  --ring-width: 2px;
+  --ring-offset-width: 2px;
+
+  /* --- Border Radius (shadcn/ui compatible) --- */
+  --radius: 0.5rem;
+}
+
+/* ==========================================================================
+   4. DARK THEME
+   ==========================================================================
+   Swap colors for dark mode. Toggle by setting data-theme="dark" on <html>.
+   ========================================================================== */
+
+[data-theme="dark"] {
+  /* --- Backgrounds & Surfaces --- */
+  --background: var(--color-deep-navy);
+  --background-secondary: var(--color-soft-ink);
+  --background-muted: var(--color-muted-slate);
+  --background-elevated: var(--color-soft-ink);
+  --background-overlay: rgba(0, 0, 0, 0.7);
+
+  /* --- Card --- */
+  --card: var(--color-soft-ink);
+  --card-foreground: var(--color-pure-white);
+
+  /* --- Text / Foreground --- */
+  --foreground: var(--color-pure-white);
+  --foreground-secondary: var(--color-concerto);
+  --foreground-muted: var(--color-glacial-salt);
+  --foreground-inverse: var(--color-deep-navy);
+
+  /* --- Borders --- */
+  --border: var(--color-soft-ink);
+  --border-muted: var(--color-muted-slate);
+  --border-strong: var(--color-ocean-city);
+  --border-focus: var(--color-ocean-city);
+
+  /* --- Input --- */
+  --input: var(--color-soft-ink);
+
+  /* --- Primary Action --- */
+  --primary: var(--color-ocean-city);
+  --primary-foreground: var(--color-deep-navy);
+  --primary-hover: var(--color-glacial-salt);
+  --primary-active: var(--color-concerto);
+
+  /* --- Secondary Action --- */
+  --secondary: var(--color-soft-ink);
+  --secondary-foreground: var(--color-pure-white);
+  --secondary-hover: var(--color-muted-slate);
+  --secondary-active: var(--color-deep-blue);
+
+  /* --- Accent --- */
+  --accent: var(--color-deep-blue);
+  --accent-foreground: var(--color-pure-white);
+
+  /* --- Muted --- */
+  --muted: var(--color-soft-ink);
+  --muted-foreground: var(--color-glacial-salt);
+
+  /* --- Focus Ring --- */
+  --ring: var(--color-ocean-city);
+  --ring-offset: var(--color-deep-navy);
+}
+
+/* ==========================================================================
+   5. TAILWIND v4 THEME EXTENSIONS
+   ==========================================================================
+   Maps CSS variables to Tailwind utilities. This enables usage like:
+   - bg-primary, text-primary-foreground
+   - bg-background-secondary
+   - border-border, shadow-brand-soft
+   - etc.
+   ========================================================================== */
+
+@theme {
+  /* --- Semantic Colors (from CSS variables) --- */
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary-hover: var(--secondary-hover);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-background: var(--background);
+  --color-background-secondary: var(--background-secondary);
+  --color-background-muted: var(--background-muted);
+  --color-background-elevated: var(--background-elevated);
+  --color-background-overlay: var(--background-overlay);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-foreground: var(--foreground);
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-foreground-inverse: var(--foreground-inverse);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-border: var(--border);
+  --color-border-muted: var(--border-muted);
+  --color-border-strong: var(--border-strong);
+  --color-border-focus: var(--border-focus);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-destructive: var(--destructive);
+
+  --color-ring: var(--ring);
+  --color-ring-offset: var(--ring-offset);
+
+  /* --- Raw Palette (for direct access when needed) --- */
+  --color-deep-blue: #2A4D88;
+  --color-ocean-city: #7C94B8;
+  --color-concerto: #D9D9D8;
+  --color-glacial-salt: #B1BBC8;
+  --color-deep-navy: #0F2A44;
+  --color-soft-ink: #4A5D73;
+  --color-muted-slate: #7A8898;
+  --color-pure-white: #FFFFFF;
+
+  /* --- Brand Shadows --- */
+  --shadow-brand-soft: 0 10px 30px rgba(42, 77, 136, 0.08);
+  --shadow-brand-medium: 0 12px 30px rgba(42, 77, 136, 0.12), 0 4px 10px rgba(124, 148, 184, 0.04);
+  --shadow-card-elevate: 0 6px 20px rgba(15, 42, 68, 0.06);
+  --shadow-card-hover: 0 8px 25px rgba(15, 42, 68, 0.1);
+  --shadow-cta: 0 10px 30px rgba(42, 77, 136, 0.12);
+
+  /* --- Extended Border Radius --- */
+  --radius-lg2: 1rem;
+}
+
+/* ==========================================================================
+   6. BASE ELEMENT RESETS
+   ==========================================================================
+   Minimal resets that complement Tailwind's Preflight. These establish
+   sensible defaults for common HTML elements.
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-size: 16px;
+  line-height: 1.5;
+  tab-size: 4;
+}
+
+body {
+  min-height: 100vh;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  font-feature-settings: 'rlig' 1, 'calt' 1;
+}
+
+/* Monospace elements use Monaspace Neon by default */
+code,
+pre,
+kbd,
+samp,
+tt {
+  font-family: 'Monaspace Neon', 'Monaspace Argon', ui-monospace,
+    SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-feature-settings: 'liga' 1, 'calt' 1, 'ss01' 1, 'ss02' 1;
+}
+
+/* --- Focus Styles --- */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: var(--ring-width) solid var(--ring);
+  outline-offset: var(--ring-offset-width);
+}
+
+/* --- Links --- */
+a {
+  color: var(--primary);
+  text-decoration: none;
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  opacity: var(--hover-opacity);
+  text-decoration: underline;
+}
+
+a:active {
+  opacity: var(--active-opacity);
+}
+
+/* Utility class to reset link hover behavior for components */
+a.link-reset:hover {
+  opacity: 1;
+  text-decoration: none;
+}
+
+/* --- Buttons (base only, component styling via classes) --- */
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* --- Form Inputs (base only) --- */
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--foreground-muted);
+  opacity: 1;
+}
+
+/* --- Media --- */
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* --- Form Resets --- */
+fieldset {
+  border: none;
+}
+
+legend {
+  padding: 0;
+}
+
+/* --- Table --- */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* --- Misc --- */
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+}
+
+::selection {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+/* ==========================================================================
+   DASHBOARD PAGE STYLES
+   ========================================================================== */
+
+/* --- Dashboard Layout --- */
+.dashboard-page {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* --- Animated Background --- */
+.dashboard-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #c5d0de 0%, #a8b8cc 50%, #94a7bf 100%);
+  background-size: 200% 200%;
+  animation: bg-shimmer 20s ease infinite;
+  z-index: 0;
+}
+
+@keyframes bg-shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.dashboard-decorations {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* --- Floating Triangle Animation --- */
+@keyframes float-rotate {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.15;
+  }
+
+  50% {
+    transform: translateY(-25px) rotate(180deg);
+    opacity: 0.35;
+  }
+
+  100% {
+    transform: translateY(0) rotate(360deg);
+    opacity: 0.15;
+  }
+}
+
+.geo-triangle {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  opacity: 0.15;
+  animation: float-rotate 20s infinite linear;
+}
+
+.geo-triangle.t1 {
+  top: 8%;
+  left: 5%;
+  border-width: 0 12px 20px 12px;
+  border-color: transparent transparent var(--color-ocean-city) transparent;
+  animation-duration: 25s;
+}
+
+.geo-triangle.t2 {
+  top: 18%;
+  right: 15%;
+  border-width: 0 10px 16px 10px;
+  border-color: transparent transparent var(--color-deep-blue) transparent;
+  animation-duration: 30s;
+  animation-delay: -5s;
+}
+
+.geo-triangle.t3 {
+  top: 45%;
+  left: 8%;
+  border-width: 0 15px 26px 15px;
+  border-color: transparent transparent var(--color-glacial-salt) transparent;
+  animation-duration: 35s;
+  animation-delay: -10s;
+}
+
+.geo-triangle.t4 {
+  bottom: 25%;
+  right: 10%;
+  border-width: 0 12px 20px 12px;
+  border-color: transparent transparent var(--color-ocean-city) transparent;
+  animation-duration: 28s;
+  animation-delay: -2s;
+}
+
+.geo-triangle.t5 {
+  bottom: 15%;
+  left: 20%;
+  border-width: 0 8px 14px 8px;
+  border-color: transparent transparent var(--color-deep-blue) transparent;
+  animation-duration: 32s;
+  animation-delay: -15s;
+}
+
+.geo-triangle.t6 {
+  top: 65%;
+  right: 30%;
+  border-width: 0 14px 24px 14px;
+  border-color: transparent transparent var(--color-glacial-salt) transparent;
+  animation-duration: 40s;
+  animation-delay: -8s;
+}
+
+.geo-triangle.t7 {
+  top: 30%;
+  left: 45%;
+  border-width: 0 6px 10px 6px;
+  border-color: transparent transparent var(--color-ocean-city) transparent;
+  animation-duration: 22s;
+  animation-delay: -12s;
+}
+
+.geo-triangle.t8 {
+  top: 80%;
+  left: 60%;
+  border-width: 0 9px 16px 9px;
+  border-color: transparent transparent var(--color-deep-blue) transparent;
+  animation-duration: 38s;
+  animation-delay: -4s;
+}
+
+.geo-triangle.t9 {
+  top: 5%;
+  right: 40%;
+  border-width: 0 11px 18px 11px;
+  border-color: transparent transparent var(--color-glacial-salt) transparent;
+  animation-duration: 45s;
+  animation-delay: -18s;
+}
+
+.geo-triangle.t10 {
+  bottom: 45%;
+  right: 25%;
+  border-width: 0 7px 12px 7px;
+  border-color: transparent transparent var(--color-ocean-city) transparent;
+  animation-duration: 26s;
+  animation-delay: -9s;
+}
+
+.geo-triangle.t11 {
+  top: 12%;
+  left: 25%;
+  border-width: 0 13px 22px 13px;
+  border-color: transparent transparent var(--color-deep-blue) transparent;
+  animation-duration: 34s;
+  animation-delay: -14s;
+}
+
+.geo-triangle.t12 {
+  bottom: 10%;
+  right: 55%;
+  border-width: 0 8px 14px 8px;
+  border-color: transparent transparent var(--color-glacial-salt) transparent;
+  animation-duration: 29s;
+  animation-delay: -6s;
+}
+
+.geo-triangle.t13 {
+  top: 60%;
+  left: 10%;
+  border-width: 0 10px 18px 10px;
+  border-color: transparent transparent var(--color-ocean-city) transparent;
+  animation-duration: 31s;
+  animation-delay: -20s;
+}
+
+.geo-triangle.t14 {
+  top: 40%;
+  right: 5%;
+  border-width: 0 12px 20px 12px;
+  border-color: transparent transparent var(--color-deep-blue) transparent;
+  animation-duration: 36s;
+  animation-delay: -1s;
+}
+
+.geo-triangle.t15 {
+  bottom: 20%;
+  left: 35%;
+  border-width: 0 9px 15px 9px;
+  border-color: transparent transparent var(--color-glacial-salt) transparent;
+  animation-duration: 42s;
+  animation-delay: -16s;
+}
+
+.geo-triangle.t16 {
+  top: 10%;
+  right: 50%;
+  border-width: 0 7px 12px 7px;
+  border-color: transparent transparent var(--color-ocean-city) transparent;
+  animation-duration: 23s;
+  animation-delay: -3s;
+}
+
+.geo-triangle.t17 {
+  top: 85%;
+  left: 15%;
+  border-width: 0 11px 19px 11px;
+  border-color: transparent transparent var(--color-deep-blue) transparent;
+  animation-duration: 37s;
+  animation-delay: -22s;
+}
+
+.geo-triangle.t18 {
+  bottom: 55%;
+  right: 5%;
+  border-width: 0 6px 10px 6px;
+  border-color: transparent transparent var(--color-glacial-salt) transparent;
+  animation-duration: 45s;
+  animation-delay: -8s;
+}
+
+.geo-triangle.t19 {
+  top: 22%;
+  left: 70%;
+  border-width: 0 14px 24px 14px;
+  border-color: transparent transparent var(--color-ocean-city) transparent;
+  animation-duration: 28s;
+  animation-delay: -15s;
+}
+
+.geo-triangle.t20 {
+  bottom: 5%;
+  right: 40%;
+  border-width: 0 8px 14px 8px;
+  border-color: transparent transparent var(--color-deep-blue) transparent;
+  animation-duration: 33s;
+  animation-delay: -5s;
+}
+
+.geo-triangle.t21 {
+  top: 50%;
+  left: 55%;
+  border-width: 0 10px 17px 10px;
+  border-color: transparent transparent var(--color-glacial-salt) transparent;
+  animation-duration: 41s;
+  animation-delay: -25s;
+}
+
+.geo-triangle.t22 {
+  top: 5%;
+  left: 85%;
+  border-width: 0 9px 15px 9px;
+  border-color: transparent transparent var(--color-ocean-city) transparent;
+  animation-duration: 26s;
+  animation-delay: -10s;
+}
+
+.geo-triangle.t23 {
+  bottom: 35%;
+  left: 5%;
+  border-width: 0 12px 20px 12px;
+  border-color: transparent transparent var(--color-deep-blue) transparent;
+  animation-duration: 39s;
+  animation-delay: -19s;
+}
+
+.geo-triangle.t24 {
+  top: 75%;
+  right: 15%;
+  border-width: 0 7px 13px 7px;
+  border-color: transparent transparent var(--color-glacial-salt) transparent;
+  animation-duration: 44s;
+  animation-delay: -2s;
+}
+
+.geo-triangle.t25 {
+  top: 35%;
+  right: 65%;
+  border-width: 0 10px 18px 10px;
+  border-color: transparent transparent var(--color-ocean-city) transparent;
+  animation-duration: 30s;
+  animation-delay: -13s;
+}
+
+/* --- Floating Dots --- */
+@keyframes float-pulse {
+
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.2;
+  }
+
+  50% {
+    transform: translateY(-15px) scale(1.5);
+    opacity: 0.4;
+  }
+}
+
+.geo-dot {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  opacity: 0.2;
+  animation: float-pulse 10s infinite ease-in-out;
+}
+
+.geo-dot.d1 {
+  top: 25%;
+  left: 15%;
+  background-color: var(--color-deep-blue);
+  animation-duration: 8s;
+}
+
+.geo-dot.d2 {
+  top: 50%;
+  right: 20%;
+  background-color: var(--color-ocean-city);
+  animation-duration: 12s;
+  animation-delay: -4s;
+}
+
+.geo-dot.d3 {
+  bottom: 40%;
+  left: 20%;
+  background-color: var(--color-glacial-salt);
+  animation-duration: 15s;
+  animation-delay: -2s;
+}
+
+.geo-dot.d4 {
+  top: 70%;
+  left: 45%;
+  background-color: var(--color-deep-blue);
+  animation-duration: 10s;
+  animation-delay: -6s;
+}
+
+/* --- Main Container --- */
+.dashboard-container {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* --- Header --- */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.dashboard-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+}
+
+.dashboard-logo:hover {
+  opacity: 1;
+  text-decoration: none;
+}
+
+.dashboard-logo-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: white;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-logo-text {
+  font-family: 'Monaspace Xenon', monospace;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-deep-navy);
+  margin: 0;
+}
+
+.dashboard-logo-text span {
+  color: var(--color-deep-blue);
+}
+
+.dashboard-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 0.5rem 1rem;
+  border-radius: 2rem;
+  backdrop-filter: blur(8px);
+}
+
+.dashboard-user-avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  border: 2px solid var(--color-glacial-salt);
+}
+
+.dashboard-user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-user-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-deep-navy);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.dashboard-user-email {
+  font-size: 0.75rem;
+  color: var(--color-soft-ink);
+  margin: 0;
+}
+
+.dashboard-logout-btn {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  color: var(--color-soft-ink);
+  transition: color 0.2s ease;
+  border-radius: 0.375rem;
+}
+
+.dashboard-logout-btn:hover {
+  color: var(--color-error);
+  background: rgba(180, 67, 67, 0.1);
+}
+
+/* --- Main Card --- */
+.dashboard-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 24px rgba(42, 77, 136, 0.1);
+  flex: 1;
+}
+
+/* --- Greeting --- */
+.dashboard-greeting {
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-greeting h2 {
+  font-family: 'Monaspace Xenon', monospace;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-deep-navy);
+  margin: 0 0 0.25rem 0;
+}
+
+.dashboard-greeting p {
+  color: var(--color-soft-ink);
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* --- Stats Grid --- */
+.dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 900px) {
+  .dashboard-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 500px) {
+  .dashboard-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Stat Tile --- */
+.stat-tile {
+  background: var(--color-deep-blue);
+  color: white;
+  padding: 1.25rem 1.5rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 12px rgba(42, 77, 136, 0.2);
+}
+
+.stat-tile:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(42, 77, 136, 0.25);
+}
+
+.stat-tile-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-tile-icon svg {
+  color: white;
+}
+
+.stat-tile-content {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.stat-tile-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stat-tile-label {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+/* --- Repositories Section --- */
+.dashboard-repos-section {
+  margin-top: 1rem;
+}
+
+.dashboard-repos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.dashboard-repos-header h3 {
+  font-family: 'Monaspace Xenon', monospace;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-deep-navy);
+  margin: 0;
+}
+
+/* --- Primary Button --- */
+.btn-primary-delta {
+  background: var(--color-deep-blue) !important;
+  color: white !important;
+  border: none !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 0.5rem !important;
+  font-weight: 500 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.375rem !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 2px 8px rgba(42, 77, 136, 0.2) !important;
+}
+
+.btn-primary-delta:hover {
+  background: #1e3a66 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(42, 77, 136, 0.3) !important;
+}
+
+/* --- Repos List --- */
+.dashboard-repos-list {
+  background: var(--color-deep-blue);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(42, 77, 136, 0.15);
+}
+
+/* --- Repository Row --- */
+.repo-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  transition: background 0.2s ease;
+}
+
+.repo-row:last-child {
+  border-bottom: none;
+}
+
+.repo-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.repo-row-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.repo-row-avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+.repo-row-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.repo-row-name {
+  font-weight: 600;
+  color: white;
+  text-decoration: none;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.repo-row-name:hover {
+  text-decoration: underline;
+  opacity: 1;
+}
+
+.repo-row-description {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0.125rem 0 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.repo-row-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.repo-language-badge {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.repo-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+/* --- Empty State --- */
+.dashboard-repos-empty {
+  padding: 3rem 2rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.dashboard-repos-empty p {
+  margin: 0.5rem 0 0 0;
+}
+
+/* --- Show More --- */
+.dashboard-repos-more {
+  padding: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* --- Footer --- */
+.dashboard-footer {
+  text-align: center;
+  padding: 1.5rem 0;
+  margin-top: 1rem;
+}
+
+.dashboard-footer p {
+  font-size: 0.8rem;
+  color: var(--color-soft-ink);
+  margin: 0;
+}
+
+.dashboard-footer a {
+  color: var(--color-deep-blue);
+  text-decoration: underline;
+}
+
+.dashboard-footer a:hover {
+  color: var(--color-deep-navy);
+}
+
+/*  7. UTILITY CLASSES
+   ==========================================================================
+   Reusable component classes for buttons, cards, inputs, and decorative
+   elements. Use these in combination with Tailwind utilities.
+   ========================================================================== */
+
+/* ---------------------------------------------------------------------------
+   Buttons
+   ---------------------------------------------------------------------------
+   Usage: <button class="btn btn-primary px-6 py-3">Click me</button>
+   
+   Variants:
+   - .btn-primary   : Main CTA, deep-blue background
+   - .btn-secondary : Secondary action, ocean-city background
+   - .btn-ghost     : Transparent with border, for less emphasis
+   --------------------------------------------------------------------------- */
+
+.btn {
+  @apply inline-flex items-center justify-center font-medium transition-all;
+  border-radius: var(--radius);
+}
+
+/* Primary Button - Deep Blue */
+.btn-primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: var(--shadow-cta);
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+  opacity: var(--hover-opacity);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  background: var(--primary-active);
+  opacity: var(--active-opacity);
+  transform: translateY(0);
+}
+
+.btn-primary:disabled {
+  opacity: var(--disabled-opacity);
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Secondary Button - Ocean City */
+.btn-secondary {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  border: 1px solid transparent;
+}
+
+.btn-secondary:hover {
+  background: var(--secondary-hover);
+  opacity: var(--hover-opacity);
+}
+
+.btn-secondary:disabled {
+  opacity: var(--disabled-opacity);
+  cursor: not-allowed;
+}
+
+/* Ghost Button - Transparent */
+.btn-ghost {
+  background: transparent;
+  color: var(--primary);
+  border: 1px solid var(--border);
+}
+
+.btn-ghost:hover {
+  background: rgba(124, 148, 184, 0.08);
+  border-color: var(--border-strong);
+}
+
+.btn-ghost:disabled {
+  opacity: var(--disabled-opacity);
+  cursor: not-allowed;
+}
+
+/* ---------------------------------------------------------------------------
+   Cards
+   ---------------------------------------------------------------------------
+   Usage: <div class="card-surface">Content here</div>
+   
+   Provides elevated card styling with subtle shadow and hover effect.
+   --------------------------------------------------------------------------- */
+
+.card-surface {
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) * 1.1);
+  box-shadow: var(--shadow-card-elevate);
+  padding: 1.5rem;
+  transition: box-shadow 0.2s ease;
+}
+
+.card-surface:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* ---------------------------------------------------------------------------
+   Inputs
+   ---------------------------------------------------------------------------
+   Usage: <input class="input-themed px-3 py-2 rounded-md" />
+   
+   Themed input with focus ring using brand colors.
+   --------------------------------------------------------------------------- */
+
+.input-themed {
+  border: 1px solid var(--border);
+  background: var(--background-elevated);
+  color: var(--foreground);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-themed:focus {
+  box-shadow: 0 0 0 calc(var(--ring-offset-width) + 2px) rgba(42, 77, 136, 0.12);
+  border-color: var(--border-focus);
+  outline: none;
+}
+
+.input-themed::placeholder {
+  color: var(--foreground-muted);
+}
+
+.input-themed:disabled {
+  opacity: var(--disabled-opacity);
+  cursor: not-allowed;
+}
+
+/* ---------------------------------------------------------------------------
+   Decorative Elements
+   ---------------------------------------------------------------------------
+   Accent underlines, dots, and gradients for visual polish.
+   --------------------------------------------------------------------------- */
+
+/* Heading with gradient underline accent */
+.heading-accent {
+  display: inline-block;
+  position: relative;
+}
+
+.heading-accent::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 50%;
+  bottom: -0.5rem;
+  height: 6px;
+  background: linear-gradient(90deg, var(--secondary), var(--primary));
+  border-radius: 6px;
+  opacity: 0.9;
+}
+
+/* Accent color for punctuation (e.g., "Delta." period) */
+.accent-dot {
+  color: var(--accent);
+}
+
+/* Brand gradient backgrounds */
+.gradient-brand {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+}
+
+.gradient-brand-subtle {
+  background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);
+  opacity: 0.1;
+}
