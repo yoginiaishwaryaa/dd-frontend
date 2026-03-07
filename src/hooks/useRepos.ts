@@ -5,8 +5,8 @@ export interface Repository {
     id: string
     installation_id: number
     repo_name: string
-    is_active: bool
-    is_suspended: bool
+    is_active: boolean
+    is_suspended: boolean
     avatar_url: string | null
     docs_root_path: string
     target_branch: string
@@ -25,7 +25,7 @@ export interface RepositorySettings {
 }
 
 export interface RepositoryActivation {
-    is_active: bool
+    is_active: boolean
 }
 
 export function useRepos() {

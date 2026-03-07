@@ -12,7 +12,6 @@ import { Input } from '@/components/shadcn/input'
 import { Label } from '@/components/shadcn/label'
 import { Badge } from '@/components/shadcn/badge'
 import { Separator } from '@/components/shadcn/separator'
-import { Skeleton } from '@/components/shadcn/skeleton'
 import { toast } from 'sonner'
 
 // Main RepoSettings Component
