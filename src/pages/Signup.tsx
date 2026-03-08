@@ -94,7 +94,7 @@ export default function Signup() {
       { email, full_name: fullName, password },
       {
         onSuccess: () => {
-          navigate('/login')
+          navigate('/dashboard')
         },
       }
     )

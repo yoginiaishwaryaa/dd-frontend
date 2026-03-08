@@ -107,7 +107,7 @@ describe('Dashboard - Header & Branding', () => {
     it('logo links to the dashboard', () => {
         render(<Dashboard />, { wrapper })
 
-        const logoLink = screen.getByRole('link', { name: /Delta Logo/i })
+        const logoLink = screen.getByRole('link', { name: /Delta\./ })
         expect(logoLink).toHaveAttribute('href', '/dashboard')
     })
 })

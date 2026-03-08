@@ -69,9 +69,9 @@ export function Navbar() {
                 transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                 className="flex items-center gap-2"
               >
-                <img
-                  src="/Delta Docs Logo.png"
-                  alt="Delta Logo"
+                <img 
+                  src="/Delta Docs Logo.png" 
+                  alt="Delta Logo" 
                   className="h-8 w-8 object-contain"
                 />
                 <span className={cn(

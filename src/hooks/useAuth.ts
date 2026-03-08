@@ -10,7 +10,7 @@ export function useSignup() {
   return useMutation({
     mutationFn: async (data: UserCreate) => {
       const hashedPassword = await hashPassword(data.password)
-      const response = await api.post<MessageResponse>('/auth/signup', {
+      const response = await api.post<LoginResponse>('/auth/signup', {
         ...data,
         password: hashedPassword,
       })
@@ -18,6 +18,10 @@ export function useSignup() {
         throw new Error(response.error)
       }
       return response.data!
+    },
+    onSuccess: (data) => {
+      setStoredUser({ email: data.email, name: data.name })
+      queryClient.setQueryData(['currentUser'], getStoredUser())
     },
   })
 }
