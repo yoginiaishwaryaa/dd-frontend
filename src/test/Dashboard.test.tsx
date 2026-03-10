@@ -385,7 +385,7 @@ describe('Dashboard - Action Buttons', () => {
 
         // The button should be inside an anchor linking to GitHub
         const anchor = linkRepoBtn.closest('a')
-        expect(anchor).toHaveAttribute('href', 'https://github.com/apps/delta-docs/installations/new')
+        expect(anchor).toHaveAttribute('href', 'https://github.com/apps/delta-docs-auto-gen/installations/new')
     })
 
     // "Manage Repos" should link to the internal /repos route
