@@ -3,7 +3,7 @@
 // Allows navigation to individual repository settings
 
 import { Link } from 'react-router-dom'
-import { GitBranch, ArrowClockwise, SignOut, Gear, ArrowLeft, GithubLogo } from '@phosphor-icons/react'
+import { GitBranch, ArrowClockwise, SignOut, Gear, ArrowLeft, GitCommit, CaretRight } from '@phosphor-icons/react'
 import { useRepos, type Repository } from '@/hooks/useRepos'
 import { useLogout } from '@/hooks/useAuth'
 import { useCurrentUser, getGravatarUrl } from '@/hooks/useUser'
@@ -13,7 +13,7 @@ import { Skeleton } from '@/components/shadcn/skeleton'
 // RepoCard Component - Displays individual repository information in a card
 const RepoCard = ({ repo }: { repo: Repository }) => {
     return (
-        <div className="repo-row">
+        <div className="repo-row group">
             <div className="repo-row-info">
                 <img
                     src={repo.avatar_url || `https://www.gravatar.com/avatar/${repo.repo_name}?d=robohash`}
@@ -21,7 +21,7 @@ const RepoCard = ({ repo }: { repo: Repository }) => {
                     alt=""
                 />
                 <div className="repo-row-text">
-                    <Link to={`/repos/${repo.id}`} className="repo-row-name">
+                    <Link to={`/repos/${repo.id}/events`} className="repo-row-name">
                         {repo.repo_name}
                     </Link>
                     <p className="repo-row-description">
@@ -30,21 +30,35 @@ const RepoCard = ({ repo }: { repo: Repository }) => {
                 </div>
             </div>
             <div className="repo-row-meta">
-                <a
-                    href={`https://github.com/${repo.repo_name}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-deep-navy hover:text-deep-blue font-semibold transition-colors mr-3 flex items-center gap-1.5 bg-white/40 px-3 py-1.5 rounded-md hover:bg-white/60"
-                >
-                    <GithubLogo className="size-4" weight="fill" />
-                    View on GitHub
-                </a>
-                <Button variant="ghost" size="sm" asChild className="text-deep-navy hover:text-deep-blue bg-white/40 hover:bg-white/60 font-semibold">
-                    <Link to={`/repos/${repo.id}`} className="flex items-center">
-                        <Gear className="size-4 mr-2" />
-                        Settings
+                {repo.is_active ? (
+                    <span className="text-xs px-2 py-1 rounded-full bg-green-500/20 text-green-400">Active</span>
+                ) : (
+                    <span className="text-xs px-2 py-1 rounded-full bg-gray-500/20 text-gray-400">Inactive</span>
+                )}
+                
+                {/* Quick Actions */}
+                <div className="flex items-center gap-1 transition-opacity">
+                    <Link
+                        to={`/repos/${repo.id}/events`}
+                        className="p-2 rounded hover:bg-white/10 transition-colors"
+                        style={{ color: 'white' }}
+                        title="View drift events"
+                    >
+                        <GitCommit className="size-6" style={{ color: 'white' }} />
                     </Link>
-                </Button>
+                    <Link
+                        to={`/repos/${repo.id}`}
+                        className="p-2 rounded hover:bg-white/10 transition-colors"
+                        style={{ color: 'white' }}
+                        title="Repository settings"
+                    >
+                        <Gear className="size-6" style={{ color: 'white' }} />
+                    </Link>
+                </div>
+                
+                <Link to={`/repos/${repo.id}/events`} className="cursor-pointer" title="View drift events">
+                    <CaretRight className="size-4 opacity-50 hover:opacity-100 transition-opacity" style={{ color: 'white' }} />
+                </Link>
             </div>
         </div>
     )
@@ -169,8 +183,16 @@ export default function RepoList() {
                     <div className="dashboard-repos-section">
                         <div className="dashboard-repos-header">
                             <h3>All Repositories</h3>
-                            <Button variant="ghost" size="sm" onClick={() => refetch()} title="Refresh">
+                            <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => refetch()} 
+                                disabled={isLoading}
+                                className="hover:bg-white/10 text-white disabled:opacity-50"
+                                title="Refresh"
+                            >
                                 <ArrowClockwise className={`size-4 ${isLoading ? 'animate-spin' : ''}`} />
+                                {!isLoading && <span className="ml-1.5 text-xs">Refresh</span>}
                             </Button>
                         </div>
 

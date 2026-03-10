@@ -2,7 +2,17 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BrowserRouter } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import Dashboard from '../pages/Dashboard'
+
+// Create a new QueryClient for each test
+const createTestQueryClient = () => new QueryClient({
+    defaultOptions: {
+        queries: {
+            retry: false,
+        },
+    },
+})
 
 // ---- Mock Data ----
 const mockUser = {
@@ -19,13 +29,118 @@ const mockStats = {
 }
 
 const mockRepos = [
-    { id: '1', name: 'delta-frontend', description: 'Frontend app', language: 'TypeScript', stargazers_count: 42, forks_count: 8, avatar_url: 'https://avatars.githubusercontent.com/u/1?v=4' },
-    { id: '2', name: 'delta-backend', description: 'Backend API', language: 'Python', stargazers_count: 30, forks_count: 5, avatar_url: 'https://avatars.githubusercontent.com/u/2?v=4' },
-    { id: '3', name: 'delta-docs', description: null, language: 'Markdown', stargazers_count: 10, forks_count: 2, avatar_url: null },
-    { id: '4', name: 'delta-cli', description: 'CLI tool', language: 'Go', stargazers_count: 15, forks_count: 3, avatar_url: 'https://avatars.githubusercontent.com/u/4?v=4' },
-    { id: '5', name: 'delta-sdk', description: 'SDK library', language: 'TypeScript', stargazers_count: 20, forks_count: 4, avatar_url: 'https://avatars.githubusercontent.com/u/5?v=4' },
-    { id: '6', name: 'delta-infra', description: 'Infrastructure', language: 'Terraform', stargazers_count: 5, forks_count: 1, avatar_url: 'https://avatars.githubusercontent.com/u/6?v=4' },
-    { id: '7', name: 'delta-design', description: 'Design system', language: 'CSS', stargazers_count: 8, forks_count: 0, avatar_url: null },
+    {
+        id: '1',
+        installation_id: 123,
+        repo_name: 'user/delta-frontend',
+        is_active: true,
+        is_suspended: false,
+        avatar_url: 'https://avatars.githubusercontent.com/u/1?v=4',
+        docs_root_path: 'docs',
+        target_branch: 'main',
+        reviewer: null,
+        docs_policies: null,
+        style_preference: 'professional',
+        file_ignore_patterns: null,
+        last_synced_at: '2026-03-09T00:00:00Z',
+        created_at: '2026-03-01T00:00:00Z'
+    },
+    {
+        id: '2',
+        installation_id: 123,
+        repo_name: 'user/delta-backend',
+        is_active: true,
+        is_suspended: false,
+        avatar_url: 'https://avatars.githubusercontent.com/u/2?v=4',
+        docs_root_path: 'docs',
+        target_branch: 'main',
+        reviewer: null,
+        docs_policies: null,
+        style_preference: 'professional',
+        file_ignore_patterns: null,
+        last_synced_at: '2026-03-09T00:00:00Z',
+        created_at: '2026-03-01T00:00:00Z'
+    },
+    {
+        id: '3',
+        installation_id: 123,
+        repo_name: 'user/delta-docs',
+        is_active: false,
+        is_suspended: false,
+        avatar_url: null,
+        docs_root_path: 'docs',
+        target_branch: 'main',
+        reviewer: null,
+        docs_policies: null,
+        style_preference: 'professional',
+        file_ignore_patterns: null,
+        last_synced_at: '2026-03-09T00:00:00Z',
+        created_at: '2026-03-01T00:00:00Z'
+    },
+    {
+        id: '4',
+        installation_id: 123,
+        repo_name: 'user/delta-cli',
+        is_active: true,
+        is_suspended: false,
+        avatar_url: 'https://avatars.githubusercontent.com/u/4?v=4',
+        docs_root_path: 'docs',
+        target_branch: 'main',
+        reviewer: null,
+        docs_policies: null,
+        style_preference: 'professional',
+        file_ignore_patterns: null,
+        last_synced_at: '2026-03-09T00:00:00Z',
+        created_at: '2026-03-01T00:00:00Z'
+    },
+    {
+        id: '5',
+        installation_id: 123,
+        repo_name: 'user/delta-sdk',
+        is_active: true,
+        is_suspended: false,
+        avatar_url: 'https://avatars.githubusercontent.com/u/5?v=4',
+        docs_root_path: 'docs',
+        target_branch: 'main',
+        reviewer: null,
+        docs_policies: null,
+        style_preference: 'professional',
+        file_ignore_patterns: null,
+        last_synced_at: '2026-03-09T00:00:00Z',
+        created_at: '2026-03-01T00:00:00Z'
+    },
+    {
+        id: '6',
+        installation_id: 123,
+        repo_name: 'user/delta-infra',
+        is_active: true,
+        is_suspended: false,
+        avatar_url: 'https://avatars.githubusercontent.com/u/6?v=4',
+        docs_root_path: 'docs',
+        target_branch: 'main',
+        reviewer: null,
+        docs_policies: null,
+        style_preference: 'professional',
+        file_ignore_patterns: null,
+        last_synced_at: '2026-03-09T00:00:00Z',
+        created_at: '2026-03-01T00:00:00Z'
+    },
+    {
+        id: '7',
+        installation_id: 123,
+        repo_name: 'user/delta-design',
+        is_active: true,
+        is_suspended: false,
+        avatar_url: null,
+        docs_root_path: 'docs',
+        target_branch: 'main',
+        reviewer: null,
+        docs_policies: null,
+        style_preference: 'professional',
+        file_ignore_patterns: null,
+        last_synced_at: '2026-03-09T00:00:00Z',
+        created_at: '2026-03-01T00:00:00Z'
+    },
 ]
 
 // ---- Mock Return Values (mutable per-test) ----
@@ -46,13 +161,29 @@ vi.mock('@/hooks/useAuth', () => ({
 
 vi.mock('@/hooks/useDashboard', () => ({
     useDashboardStats: () => mockStatsReturn,
-    useDashboardRepos: () => mockReposReturn,
+}))
+
+vi.mock('@/hooks/useRepos', () => ({
+    useRepos: () => mockReposReturn,
+}))
+
+vi.mock('@/components/shared/NotificationBell', () => ({
+    NotificationBell: () => <div>NotificationBell</div>,
+}))
+
+vi.mock('@/components/shared/EmptyState', () => ({
+    EmptyState: () => <div>EmptyState</div>,
 }))
 
 // Wrapper component for tests
-const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <BrowserRouter>{children}</BrowserRouter>
-)
+const wrapper = ({ children }: { children: React.ReactNode }) => {
+    const queryClient = createTestQueryClient()
+    return (
+        <QueryClientProvider client={queryClient}>
+            <BrowserRouter>{children}</BrowserRouter>
+        </QueryClientProvider>
+    )
+}
 
 beforeEach(() => {
     // Reset to default mock values before each test
@@ -236,49 +367,40 @@ describe('Dashboard - Repositories List', () => {
     it('renders repository names', () => {
         render(<Dashboard />, { wrapper })
 
-        expect(screen.getByText('delta-frontend')).toBeInTheDocument()
-        expect(screen.getByText('delta-backend')).toBeInTheDocument()
-        expect(screen.getByText('delta-docs')).toBeInTheDocument()
+        expect(screen.getByText('user/delta-frontend')).toBeInTheDocument()
+        expect(screen.getByText('user/delta-backend')).toBeInTheDocument()
+        expect(screen.getByText('user/delta-docs')).toBeInTheDocument()
     })
 
-    // Repo descriptions should be displayed
+    // Repo status should be displayed
     it('renders repository descriptions', () => {
         render(<Dashboard />, { wrapper })
 
-        expect(screen.getByText('Frontend app')).toBeInTheDocument()
-        expect(screen.getByText('Backend API')).toBeInTheDocument()
+        const monitoringActive = screen.getAllByText(/Monitoring active/i)
+        expect(monitoringActive.length).toBeGreaterThan(0)
     })
 
-    // Null description should fall back to "No description"
-    it('shows "No description" when repo description is null', () => {
+    // Inactive repo should show paused status
+    it('shows "Monitoring paused" when repo is inactive', () => {
         render(<Dashboard />, { wrapper })
 
-        expect(screen.getByText('No description')).toBeInTheDocument()
+        expect(screen.getByText(/Monitoring paused/i)).toBeInTheDocument()
     })
 
-    // Language badges should render for each repo
-    it('renders language badges for repos with a language', () => {
+    // Active status badge should be visible
+    it('renders active status badges', () => {
         render(<Dashboard />, { wrapper })
 
-        expect(screen.getByText('TypeScript')).toBeInTheDocument()
-        expect(screen.getByText('Python')).toBeInTheDocument()
-        expect(screen.getByText('Markdown')).toBeInTheDocument()
+        const activeLabels = screen.getAllByText('Active')
+        expect(activeLabels.length).toBeGreaterThan(0)
     })
 
-    // Star and fork counts should be visible
-    it('renders star and fork counts', () => {
-        render(<Dashboard />, { wrapper })
-
-        expect(screen.getByText('42')).toBeInTheDocument()
-        expect(screen.getByText('8')).toBeInTheDocument()
-    })
-
-    // Repo name should link to /repos/:id
+    // Repo name should link to /repos/:id/events
     it('links each repo name to its detail page', () => {
         render(<Dashboard />, { wrapper })
 
-        const repoLink = screen.getByRole('link', { name: 'delta-frontend' })
-        expect(repoLink).toHaveAttribute('href', '/repos/1')
+        const repoLink = screen.getByRole('link', { name: 'user/delta-frontend' })
+        expect(repoLink).toHaveAttribute('href', '/repos/1/events')
     })
 
     // Each repo row should have an avatar from the API (avatar_url)
@@ -296,13 +418,12 @@ describe('Dashboard - Repositories List', () => {
 // EMPTY STATE
 // ========================================
 describe('Dashboard - Empty State', () => {
-    // Empty repo list should show the "No repositories linked" message
+    // Empty repo list should show the empty state component
     it('shows empty state when no repos are linked', () => {
         mockReposReturn = { data: [], isLoading: false, refetch: vi.fn() }
         render(<Dashboard />, { wrapper })
 
-        expect(screen.getByText(/No repositories linked yet/i)).toBeInTheDocument()
-        expect(screen.getByText(/Connect your GitHub account to get started/i)).toBeInTheDocument()
+        expect(screen.getByText('EmptyState')).toBeInTheDocument()
     })
 })
 
@@ -316,9 +437,9 @@ describe('Dashboard - Repos Loading', () => {
         render(<Dashboard />, { wrapper })
 
         // Should not show the empty state
-        expect(screen.queryByText(/No repositories linked yet/i)).not.toBeInTheDocument()
+        expect(screen.queryByText('EmptyState')).not.toBeInTheDocument()
         // Should not show any repo names
-        expect(screen.queryByText('delta-frontend')).not.toBeInTheDocument()
+        expect(screen.queryByText('user/delta-frontend')).not.toBeInTheDocument()
     })
 })
 
@@ -349,16 +470,16 @@ describe('Dashboard - Show More / Show Less', () => {
         render(<Dashboard />, { wrapper })
 
         // Initially only 5 repos shown
-        expect(screen.queryByText('delta-infra')).not.toBeInTheDocument()
-        expect(screen.queryByText('delta-design')).not.toBeInTheDocument()
+        expect(screen.queryByText('user/delta-infra')).not.toBeInTheDocument()
+        expect(screen.queryByText('user/delta-design')).not.toBeInTheDocument()
 
         // Click "Show More"
         const showMoreBtn = screen.getByText(/Show More/i)
         await user.click(showMoreBtn)
 
         // All 7 repos visible now
-        expect(screen.getByText('delta-infra')).toBeInTheDocument()
-        expect(screen.getByText('delta-design')).toBeInTheDocument()
+        expect(screen.getByText('user/delta-infra')).toBeInTheDocument()
+        expect(screen.getByText('user/delta-design')).toBeInTheDocument()
 
         // Button now says "Show Less"
         expect(screen.getByText(/Show Less/i)).toBeInTheDocument()
@@ -367,8 +488,8 @@ describe('Dashboard - Show More / Show Less', () => {
         await user.click(screen.getByText(/Show Less/i))
 
         // Back to 5 repos
-        expect(screen.queryByText('delta-infra')).not.toBeInTheDocument()
-        expect(screen.queryByText('delta-design')).not.toBeInTheDocument()
+        expect(screen.queryByText('user/delta-infra')).not.toBeInTheDocument()
+        expect(screen.queryByText('user/delta-design')).not.toBeInTheDocument()
     })
 })
 
@@ -385,7 +506,7 @@ describe('Dashboard - Action Buttons', () => {
 
         // The button should be inside an anchor linking to GitHub
         const anchor = linkRepoBtn.closest('a')
-        expect(anchor).toHaveAttribute('href', 'https://github.com/apps/testdelta/installations/new')
+        expect(anchor).toHaveAttribute('href', 'https://github.com/apps/delta-docs/installations/new')
     })
 
     // "Manage Repos" should link to the internal /repos route

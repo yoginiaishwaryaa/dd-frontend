@@ -3,16 +3,35 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, SignOut, FloppyDisk, GitBranch } from '@phosphor-icons/react'
+import { ArrowLeft, SignOut, FloppyDisk, GitPullRequest, CaretRight, CheckCircle, Clock, XCircle, GithubLogo, ArrowSquareOut, Gear } from '@phosphor-icons/react'
 import { useRepos, useUpdateRepoSettings, useToggleRepo } from '@/hooks/useRepos'
 import { useCurrentUser, getGravatarUrl } from '@/hooks/useUser'
 import { useLogout } from '@/hooks/useAuth'
+import { useDriftEvents } from '@/hooks/useDriftEvents'
 import { Button } from '@/components/shadcn/button'
 import { Input } from '@/components/shadcn/input'
 import { Label } from '@/components/shadcn/label'
 import { Badge } from '@/components/shadcn/badge'
-import { Separator } from '@/components/shadcn/separator'
+import { Skeleton } from '@/components/shadcn/skeleton'
+import { StatusBadge } from '@/components/shared/StatusBadge'
+import { NotificationBell } from '@/components/shared/NotificationBell'
+import { Breadcrumb } from '@/components/shared/Breadcrumb'
 import { toast } from 'sonner'
+import type { DriftResult } from '@/types/drift'
+
+function getResultIcon(result: DriftResult) {
+    switch (result) {
+        case 'clean':
+            return <CheckCircle className="size-5 text-green-500" weight="fill" />
+        case 'drift_detected':
+        case 'missing_docs':
+            return <Clock className="size-5 text-amber-500" weight="fill" />
+        case 'error':
+            return <XCircle className="size-5 text-red-500" weight="fill" />
+        default:
+            return <Clock className="size-5 text-gray-400" weight="duotone" />
+    }
+}
 
 // Main RepoSettings Component
 export default function RepoSettings() {
@@ -26,6 +45,7 @@ export default function RepoSettings() {
     const { mutate: logout, isPending: logoutPending } = useLogout()
     const updateSettings = useUpdateRepoSettings()
     const toggleRepo = useToggleRepo()
+    const { data: driftEvents, isLoading: driftEventsLoading } = useDriftEvents(repoId!)
 
     // Find the specific repository from the list
     const repo = repos?.find(r => r.id === repoId)
@@ -33,16 +53,20 @@ export default function RepoSettings() {
     // Local state for form inputs
     const [docsPath, setDocsPath] = useState('')
     const [defaultBranch, setDefaultBranch] = useState('')
-    const [driftSensitivity, setDriftSensitivity] = useState(0.5)
+    const [reviewerGithubId, setReviewerGithubId] = useState('')
+    const [docsPolicies, setDocsPolicies] = useState('')
     const [stylePreference, setStylePreference] = useState('professional')
+    const [ignorePatterns, setIgnorePatterns] = useState('')
 
     // Load initial state when repo is found
     useEffect(() => {
         if (repo) {
             setDocsPath(repo.docs_root_path || '/docs')
             setDefaultBranch(repo.target_branch || 'main')
-            setDriftSensitivity(repo.drift_sensitivity || 0.5)
+            setReviewerGithubId(repo.reviewer || '')
+            setDocsPolicies(repo.docs_policies || '')
             setStylePreference(repo.style_preference || 'professional')
+            setIgnorePatterns(repo.file_ignore_patterns?.join(', ') || '')
         }
     }, [repo])
 
@@ -56,13 +80,18 @@ export default function RepoSettings() {
 
     // Save Settings Handler
     const handleSave = () => {
+        const patterns = ignorePatterns.trim()
+            ? ignorePatterns.split(',').map(p => p.trim()).filter(Boolean)
+            : null
         updateSettings.mutate({
             id: repo!.id,
             settings: {
                 docs_root_path: docsPath,
                 target_branch: defaultBranch,
-                drift_sensitivity: Number(driftSensitivity),
-                style_preference: stylePreference
+                reviewer: reviewerGithubId || null,
+                docs_policies: docsPolicies || null,
+                style_preference: stylePreference,
+                file_ignore_patterns: patterns
             }
         }, {
             onSuccess: () => {
@@ -136,7 +165,7 @@ export default function RepoSettings() {
                 {/* Header */}
                 <header className="dashboard-header">
                     <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="icon" onClick={() => navigate('/repos')} title="Back to repos">
+                        <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')} title="Back to dashboard">
                             <ArrowLeft className="size-5" />
                         </Button>
                         <Link to="/dashboard" className="dashboard-logo">
@@ -147,6 +176,7 @@ export default function RepoSettings() {
                         </Link>
                     </div>
                     <div className="dashboard-user">
+                        <NotificationBell />
                         <img
                             src={getGravatarUrl(user.email)}
                             alt="User avatar"
@@ -172,37 +202,59 @@ export default function RepoSettings() {
                 </header>
 
                 {/* Main Card */}
-                <main className="dashboard-card max-w-4xl">
+                <main className="dashboard-card">
+                    {/* Breadcrumb */}
+                    <Breadcrumb
+                        items={[
+                            { label: 'Repositories', href: '/dashboard' },
+                            { label: repo.repo_name }
+                        ]}
+                        className="mb-4"
+                    />
+
                     {/* Page Header */}
-                    <div className="dashboard-greeting">
-                        <div className="flex items-center gap-3">
-                            <h2 className="flex items-center gap-2">
-                                <GitBranch className="size-6" />
-                                {repo.repo_name}
-                            </h2>
-                            <Badge variant={repo.is_active ? "default" : "secondary"} className={repo.is_active ? "bg-green-500/15 text-green-600 hover:bg-green-500/25" : ""}>
-                                {repo.is_active ? "Active" : "Inactive"}
-                            </Badge>
+                    <div className="dashboard-greeting mb-6">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <h2 className="flex items-center gap-2">
+                                    <Gear className="size-6 text-deep-navy" />
+                                    {repo.repo_name}
+                                </h2>
+                                <Badge variant={repo.is_active ? "default" : "secondary"} className={repo.is_active ? "bg-green-500/15 text-green-600 hover:bg-green-500/25" : ""}>
+                                    {repo.is_active ? "Active" : "Inactive"}
+                                </Badge>
+                            </div>
+                            <a
+                                href={`https://github.com/${repo.repo_name}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1 text-sm text-white/60 hover:text-white transition-colors"
+                            >
+                                <GithubLogo className="size-4" weight="fill" />
+                                View on GitHub
+                                <ArrowSquareOut className="size-3" />
+                            </a>
                         </div>
                         <p className="font-mono text-sm opacity-60">{repo.id}</p>
                     </div>
 
-                    {/* Settings Sections */}
-                    <div className="space-y-8 mt-8">
-                        {/* Activation Section */}
-                        <section>
+                    {/* Two Column Layout */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Left Column - Settings */}
+                        <div className="lg:col-span-2 space-y-4">
+                            {/* Activation Section */}
                             <div className="stat-tile">
                                 <div className="flex items-center justify-between w-full">
-                                    <div className="space-y-1">
-                                        <Label htmlFor="active-toggle" className="text-base font-medium">Enable Monitoring</Label>
-                                        <p className="text-sm text-black font-medium">
+                                    <div className="space-y-0.5">
+                                        <Label htmlFor="active-toggle" className="text-base font-medium text-white">Enable Monitoring</Label>
+                                        <p className="text-sm text-white/70">
                                             {repo.is_active
                                                 ? "Delta is actively monitoring this repository for drift."
                                                 : "Monitoring is paused. No updates will be processed."}
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        {toggleRepo.isPending && <span className="text-xs text-deep-blue animate-pulse">Updating...</span>}
+                                        {toggleRepo.isPending && <span className="text-xs text-white animate-pulse">Updating...</span>}
                                         <label className="relative inline-flex items-center cursor-pointer">
                                             <input
                                                 id="active-toggle"
@@ -212,96 +264,114 @@ export default function RepoSettings() {
                                                 onChange={(e) => handleToggleActive(e.target.checked)}
                                                 disabled={toggleRepo.isPending}
                                             />
-                                            <div className="w-11 h-6 bg-gray-200 peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                                            <div className="w-11 h-6 bg-white/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
                                         </label>
                                     </div>
                                 </div>
                             </div>
-                        </section>
 
-                        {/* Documentation Automation Section */}
-                        <section>
-                            <h3 className="text-lg font-semibold mb-4">Documentation Automation</h3>
-
+                            {/* Documentation Automation Section */}
                             <div className="stat-tile">
-                                <div className="space-y-6 w-full">
+                                <div className="w-full space-y-4">
+                                    <h3 className="text-white font-semibold border-b border-white/10 pb-2">Documentation Automation</h3>
+
                                     {/* Path and Branch Settings */}
                                     <div className="grid gap-4 sm:grid-cols-2">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="docs-path">Documentation Path</Label>
+                                        <div className="space-y-1.5">
+                                            <Label htmlFor="docs-path" className="text-white text-sm">Documentation Path</Label>
                                             <Input
                                                 id="docs-path"
                                                 value={docsPath}
                                                 onChange={(e) => setDocsPath(e.target.value)}
                                                 placeholder="/docs"
+                                                className="bg-deep-navy/50 border-white/20 text-white placeholder:text-white/40 h-8"
                                             />
-                                            <p className="text-xs text-black font-semibold">Where documentation lives in your repo.</p>
+                                            <p className="text-[11px] text-white/50">Where docs live in your repo.</p>
                                         </div>
 
-                                        <div className="space-y-2">
-                                            <Label htmlFor="default-branch">Default Branch</Label>
+                                        <div className="space-y-1.5">
+                                            <Label htmlFor="default-branch" className="text-white text-sm">Target Branch</Label>
                                             <Input
                                                 id="default-branch"
                                                 value={defaultBranch}
                                                 onChange={(e) => setDefaultBranch(e.target.value)}
                                                 placeholder="main"
+                                                className="bg-deep-navy/50 border-white/20 text-white placeholder:text-white/40 h-8"
                                             />
-                                            <p className="text-xs text-black font-semibold">Branch to target for PRs.</p>
+                                            <p className="text-[11px] text-white/50">Branch to target for PRs.</p>
                                         </div>
                                     </div>
-
-                                    <Separator />
 
                                     {/* Sensitivity and Style */}
                                     <div className="grid gap-4 sm:grid-cols-2">
-                                        <div className="space-y-4">
-                                            <div className="flex items-center justify-between">
-                                                <Label htmlFor="drift-sensitivity">Drift Sensitivity</Label>
-                                                <span className="text-xs font-mono bg-ocean-city/10 text-ocean-city px-2 py-0.5 rounded-full border border-ocean-city/20">
-                                                    {(driftSensitivity * 100).toFixed(0)}%
-                                                </span>
-                                            </div>
-                                            <div className="relative pt-1">
-                                                <input
-                                                    id="drift-sensitivity"
-                                                    type="range"
-                                                    min="0"
-                                                    max="1"
-                                                    step="0.01"
-                                                    value={driftSensitivity}
-                                                    onChange={(e) => setDriftSensitivity(Number(e.target.value))}
-                                                    className="w-full h-1.5 bg-glacial-salt/20 rounded-lg appearance-none cursor-pointer accent-ocean-city focus:outline-none"
-                                                />
-                                                <div className="flex justify-between text-[10px] mt-2 text-black font-semibold opacity-60 px-1">
-                                                    <span>Low (0.0)</span>
-                                                    <span>Medium (0.5)</span>
-                                                    <span>High (1.0)</span>
-                                                </div>
-                                            </div>
+                                        <div className="space-y-1.5">
+                                            <Label htmlFor="reviewer-github-id" className="text-white text-sm">Reviewer GitHub ID</Label>
+                                            <Input
+                                                id="reviewer-github-id"
+                                                value={reviewerGithubId}
+                                                onChange={(e) => setReviewerGithubId(e.target.value)}
+                                                placeholder="github_username"
+                                                className="bg-deep-navy/50 border-white/20 text-white placeholder:text-white/40 h-8 font-mono"
+                                            />
+                                            <p className="text-[11px] text-white/50">GitHub user to assign as reviewer.</p>
                                         </div>
 
-                                        <div className="space-y-2">
-                                            <Label htmlFor="style-preference">Style Preference</Label>
+
+
+                                        <div className="space-y-1.5">
+                                            <Label htmlFor="style-preference" className="text-white text-sm">Style Preference</Label>
                                             <select
                                                 id="style-preference"
-                                                className="flex h-9 w-full rounded-md border border-glacial-salt/20 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ocean-city text-white"
+                                                className="flex h-8 w-full rounded-md border border-white/20 bg-deep-navy/50 px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ocean-city"
                                                 value={stylePreference}
                                                 onChange={(e) => setStylePreference(e.target.value)}
                                             >
-                                                <option className="text-black" value="Concise">Concise</option>
-                                                <option className="text-black" value="Descriptive">Descriptive</option>
-                                                <option className="text-black" value="Professional">Professional</option>
-                                                <option className="text-black" value="Technical">Technical</option>
+                                                <option className="bg-deep-navy" value="Concise">Concise</option>
+                                                <option className="bg-deep-navy" value="Descriptive">Descriptive</option>
+                                                <option className="bg-deep-navy" value="Professional">Professional</option>
+                                                <option className="bg-deep-navy" value="Technical">Technical</option>
                                             </select>
+                                            <p className="text-[11px] text-white/50">Tone for generated docs.</p>
                                         </div>
                                     </div>
 
+                                    {/* Document Policies */}
+                                    <div className="space-y-1.5">
+                                        <Label htmlFor="docs-policies" className="text-white text-sm">Document Policies</Label>
+                                        <textarea
+                                            id="docs-policies"
+                                            value={docsPolicies}
+                                            onChange={(e) => setDocsPolicies(e.target.value)}
+                                            placeholder="e.g. Always include a changelog...&#10;Use formal tone..."
+                                            rows={2}
+                                            className="flex w-full rounded-md border border-white/20 bg-deep-navy/50 px-3 py-2 text-sm text-white placeholder:text-white/40 font-mono resize-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ocean-city"
+                                        />
+                                        <p className="text-[11px] text-white/50">
+                                            Custom instructions for documentation generation.
+                                        </p>
+                                    </div>
+
+                                    {/* File Ignore Patterns */}
+                                    <div className="space-y-1.5">
+                                        <Label htmlFor="ignore-patterns" className="text-white text-sm">File Ignore Patterns</Label>
+                                        <Input
+                                            id="ignore-patterns"
+                                            value={ignorePatterns}
+                                            onChange={(e) => setIgnorePatterns(e.target.value)}
+                                            placeholder="node_modules/**, *.min.js"
+                                            className="bg-deep-navy/50 border-white/20 text-white placeholder:text-white/40 h-8 font-mono"
+                                        />
+                                        <p className="text-[11px] text-white/50">
+                                            Comma-separated. Supports glob patterns.
+                                        </p>
+                                    </div>
+
                                     {/* Save Button */}
-                                    <div className="flex justify-end pt-4">
+                                    <div className="flex justify-end pt-2">
                                         <Button
                                             onClick={handleSave}
                                             disabled={updateSettings.isPending}
-                                            className="btn-primary-delta min-w-[140px]"
+                                            className="btn-primary-delta"
                                         >
                                             {updateSettings.isPending ? (
                                                 <>Saving...</>
@@ -315,7 +385,61 @@ export default function RepoSettings() {
                                     </div>
                                 </div>
                             </div>
-                        </section>
+                        </div>
+
+                        {/* Right Column - Recent Events */}
+                        <div className="lg:col-span-1">
+                            <div className="stat-tile p-0! overflow-hidden h-full flex flex-col w-full items-stretch!">
+                                <div className="flex items-center justify-between p-4 border-b border-white/10 w-full">
+                                    <h3 className="text-white font-semibold">Recent Events</h3>
+                                    <Button variant="ghost" size="sm" asChild className="text-white/70 hover:text-white -mr-2">
+                                        <Link to={`/repos/${repoId}/events`} className="hover:no-underline">
+                                            View All
+                                            <CaretRight className="size-4 ml-1" />
+                                        </Link>
+                                    </Button>
+                                </div>
+                                <div className="flex-1 w-full">
+                                    {driftEventsLoading ? (
+                                        <div className="p-4 space-y-3 w-full">
+                                            <Skeleton className="h-10 w-full" />
+                                            <Skeleton className="h-10 w-full" />
+                                            <Skeleton className="h-10 w-full" />
+                                        </div>
+                                    ) : driftEvents && driftEvents.length > 0 ? (
+                                        <div className="divide-y divide-white/10 w-full">
+                                            {driftEvents.slice(0, 4).map((event) => (
+                                                <Link
+                                                    key={event.id}
+                                                    to={`/repos/${repoId}/events/${event.id}`}
+                                                    className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors hover:no-underline w-full"
+                                                >
+                                                    {getResultIcon(event.drift_result)}
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="font-medium text-white text-sm">PR #{event.pr_number}</span>
+                                                            <StatusBadge status={event.processing_phase} size="sm" />
+                                                        </div>
+                                                        <p className="text-xs text-white/50 truncate">
+                                                            {event.head_branch} → {event.base_branch}
+                                                        </p>
+                                                    </div>
+                                                    <CaretRight className="size-4 text-white/40" />
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="p-6 text-center flex-1 flex flex-col items-center justify-center w-full">
+                                            <GitPullRequest className="size-8 mx-auto mb-2 text-white/30" />
+                                            <p className="text-sm text-white/60">No drift events yet</p>
+                                            <p className="text-xs text-white/40 mt-1">
+                                                Events appear when PRs are analyzed
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </main>
 

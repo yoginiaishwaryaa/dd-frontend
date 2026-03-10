@@ -437,6 +437,30 @@ a.link-reset:hover {
   text-decoration: none;
 }
 
+/* Disable hover underline on links styled as buttons */
+a[data-slot="button"]:hover,
+a.btn:hover,
+a[class*="btn-"]:hover,
+a :is(.inline-flex.rounded-full.border):hover {
+  text-decoration: none;
+}
+
+/* Also disable underline on badges when hovering the parent link */
+a:hover .inline-flex.rounded-full.border {
+  text-decoration: none;
+  display: inline-block;
+}
+
+/* Disable hover underline for Recent Events list items entirely */
+.stat-tile a:hover {
+  text-decoration: none !important;
+}
+
+/* Re-enable underline for shadcn link button variant */
+a[data-slot="button"][data-variant="link"]:hover {
+  text-decoration: underline;
+}
+
 /* --- Buttons (base only, component styling via classes) --- */
 button {
   font-family: inherit;
@@ -1156,7 +1180,7 @@ hr {
 }
 
 .repo-row-name:hover {
-  text-decoration: underline;
+  text-decoration: none;
   opacity: 1;
 }
 
@@ -1211,7 +1235,7 @@ hr {
 /* --- Show More --- */
 .dashboard-repos-more {
   padding: 0.75rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--color-glacial-salt);
 }
 
 /* --- Footer --- */

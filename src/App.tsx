@@ -9,6 +9,10 @@ import { Toaster } from '@/components/shadcn/sonner'
 
 import RepoList from '@/pages/RepoList'
 import RepoSettings from '@/pages/RepoSettings'
+import DriftEvents from '@/pages/DriftEvents'
+import DriftEventDetail from '@/pages/DriftEventDetail'
+import Notifications from '@/pages/Notifications'
+import NotFound from '@/pages/NotFound'
 
 function App() {
   return (
@@ -63,6 +67,36 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/repos/:repoId/events"
+          element={
+            <ProtectedRoute>
+              <DriftEvents />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/repos/:repoId/events/:eventId"
+          element={
+            <ProtectedRoute>
+              <DriftEventDetail />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/notifications"
+          element={
+            <ProtectedRoute>
+              <Notifications />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Catch-all 404 */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   )

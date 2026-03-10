@@ -4,33 +4,41 @@ import {
     GitBranch,
     GitCommit,
     GitPullRequest,
-    Star,
-    GitFork,
     CaretRight,
     SignOut,
     Desktop,
-    Plus
+    Plus,
+    Gear
 } from '@phosphor-icons/react'
 import { Button } from '@/components/shadcn/button'
 import { Skeleton } from '@/components/shadcn/skeleton'
 import { useCurrentUser, getGravatarUrl } from '@/hooks/useUser'
 import { useLogout } from '@/hooks/useAuth'
-import { useDashboardStats, useDashboardRepos } from '@/hooks/useDashboard'
-import type { Repository } from '@/types/repo'
+import { useDashboardStats } from '@/hooks/useDashboard'
+import { useRepos } from '@/hooks/useRepos'
+import { NotificationBell } from '@/components/shared/NotificationBell'
+import { EmptyState } from '@/components/shared/EmptyState'
+import type { Repository } from '@/hooks/useRepos'
 
 function StatTile({
     icon: Icon,
     label,
     value,
-    isLoading
+    isLoading,
+    href,
+    onClick,
+    hint
 }: {
     icon: React.ElementType
     label: string
     value: number
     isLoading?: boolean
+    href?: string
+    onClick?: () => void
+    hint?: string
 }) {
-    return (
-        <div className="stat-tile">
+    const content = (
+        <div className={`stat-tile ${href || onClick ? 'cursor-pointer hover:scale-[1.02] hover:bg-deep-blue/80 transition-all' : ''}`}>
             <div className="stat-tile-icon">
                 <Icon className="size-5" weight="duotone" />
             </div>
@@ -41,42 +49,72 @@ function StatTile({
                     <span className="stat-tile-value">{value}</span>
                 )}
                 <span className="stat-tile-label">{label}</span>
+                {hint && <span className="text-[10px] text-white/40 mt-0.5">{hint}</span>}
             </div>
+            {(href || onClick) && (
+                <CaretRight className="size-4 text-white/30 absolute right-3 top-1/2 -translate-y-1/2" />
+            )}
         </div>
     )
+
+    if (href) {
+        return <Link to={href} className="block">{content}</Link>
+    }
+    if (onClick) {
+        return <button onClick={onClick} className="text-left w-full">{content}</button>
+    }
+    return content
 }
 
 function RepositoryRow({ repo }: { repo: Repository }) {
     return (
-        <div className="repo-row">
+        <div className="repo-row group">
             <div className="repo-row-info">
                 <img
-                    src={repo.avatar_url || `https://www.gravatar.com/avatar/${repo.name}?d=robohash`}
+                    src={repo.avatar_url || `https://www.gravatar.com/avatar/${repo.repo_name}?d=robohash`}
                     className="repo-row-avatar"
                     alt=""
                 />
                 <div className="repo-row-text">
-                    <Link to={`/repos/${repo.id}`} className="repo-row-name">
-                        {repo.name}
+                    <Link to={`/repos/${repo.id}/events`} className="repo-row-name">
+                        {repo.repo_name}
                     </Link>
-                    <p className="repo-row-description">{repo.description || 'No description'}</p>
+                    <p className="repo-row-description">
+                        {repo.is_active ? 'Monitoring active' : 'Monitoring paused'}
+                        {repo.target_branch && ` • ${repo.target_branch}`}
+                    </p>
                 </div>
             </div>
             <div className="repo-row-meta">
-                {repo.language && (
-                    <span className="repo-language-badge">
-                        {repo.language}
-                    </span>
+                {repo.is_active ? (
+                    <span className="text-xs px-2 py-1 rounded-full bg-green-500/20 text-green-400">Active</span>
+                ) : (
+                    <span className="text-xs px-2 py-1 rounded-full bg-gray-500/20 text-gray-400">Inactive</span>
                 )}
-                <div className="repo-stat">
-                    <Star className="size-4" />
-                    <span>{repo.stargazers_count}</span>
+                
+                {/* Quick Actions - visible on hover */}
+                <div className="flex items-center gap-1 transition-opacity">
+                    <Link
+                        to={`/repos/${repo.id}/events`}
+                        className="p-2 rounded hover:bg-white/10 transition-colors"
+                        style={{ color: 'white' }}
+                        title="View drift events"
+                    >
+                        <GitCommit className="size-6" style={{ color: 'white' }} />
+                    </Link>
+                    <Link
+                        to={`/repos/${repo.id}`}
+                        className="p-2 rounded hover:bg-white/10 transition-colors"
+                        style={{ color: 'white' }}
+                        title="Repository settings"
+                    >
+                        <Gear className="size-6" style={{ color: 'white' }} />
+                    </Link>
                 </div>
-                <div className="repo-stat">
-                    <GitFork className="size-4" />
-                    <span>{repo.forks_count}</span>
-                </div>
-                <CaretRight className="size-4 opacity-50" />
+                
+                <Link to={`/repos/${repo.id}/events`} className="cursor-pointer" title="View drift events">
+                    <CaretRight className="size-4 opacity-50 hover:opacity-100 transition-opacity" style={{ color: 'white' }} />
+                </Link>
             </div>
         </div>
     )
@@ -106,7 +144,7 @@ export default function Dashboard() {
     const { data: user, isLoading: userLoading } = useCurrentUser()
     const { mutate: logout, isPending: logoutPending } = useLogout()
     const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useDashboardStats()
-    const { data: repos, isLoading: reposLoading, refetch: refetchRepos } = useDashboardRepos()
+    const { data: repos, isLoading: reposLoading, refetch: refetchRepos } = useRepos()
     const [showAllRepos, setShowAllRepos] = useState(false)
 
     // Check for status parameter (from GitHub callback)
@@ -193,6 +231,7 @@ export default function Dashboard() {
                         <h1 className="dashboard-logo-text">Delta<span>.</span></h1>
                     </Link>
                     <div className="dashboard-user">
+                        <NotificationBell />
                         <img
                             src={getGravatarUrl(user.email)}
                             alt="User avatar"
@@ -232,39 +271,44 @@ export default function Dashboard() {
                             label="Installations"
                             value={stats?.installations_count ?? 0}
                             isLoading={statsLoading}
+                            hint="GitHub App"
                         />
                         <StatTile
                             icon={GitBranch}
                             label="Repos Linked"
                             value={stats?.repos_linked_count ?? 0}
                             isLoading={statsLoading}
+                            hint="Click to manage"
+                            href="/repos"
                         />
                         <StatTile
                             icon={GitCommit}
                             label="Drift Events"
                             value={stats?.drift_events_count ?? 0}
                             isLoading={statsLoading}
+                            hint="All analyses"
                         />
                         <StatTile
                             icon={GitPullRequest}
                             label="PRs Waiting"
                             value={stats?.pr_waiting_count ?? 0}
                             isLoading={statsLoading}
+                            hint="Need review"
                         />
                     </div>
 
                     {/* Repositories Section */}
-                    <div className="dashboard-repos-section">
+                    <div className="dashboard-repos-section" id="repos-section">
                         <div className="dashboard-repos-header">
                             <h3>Recent Repositories</h3>
                             <div className="flex items-center gap-2">
                                 <Link to="/repos">
-                                    <Button variant="outline" className="border-glacial-salt/20 hover:bg-ocean-city/10">
+                                    <Button variant="outline" className="border-deep-navy/30 text-deep-navy hover:bg-deep-navy/10">
                                         <GitBranch className="size-4 mr-2" />
                                         Manage Repos
                                     </Button>
                                 </Link>
-                                <a href="https://github.com/apps/testdelta/installations/new">
+                                <a href="https://github.com/apps/delta-docs/installations/new">
                                     <Button className="btn-primary-delta">
                                         <Plus className="size-4 mr-2" />
                                         Link Repository
@@ -281,15 +325,20 @@ export default function Dashboard() {
                                     <RepositoryRowSkeleton />
                                 </>
                             ) : displayedRepos.length > 0 ? (
-                                displayedRepos.map((repo, index) => (
-                                    <RepositoryRow key={repo.name + index} repo={repo} />
+                                displayedRepos.map((repo) => (
+                                    <RepositoryRow key={repo.id} repo={repo} />
                                 ))
                             ) : (
-                                <div className="dashboard-repos-empty">
-                                    <GitBranch className="size-12 opacity-30" />
-                                    <p>No repositories linked yet</p>
-                                    <p className="text-sm opacity-70">Connect your GitHub account to get started</p>
-                                </div>
+                                <EmptyState
+                                    icon={GitBranch}
+                                    title="No repositories linked"
+                                    description="Connect your GitHub repositories to start monitoring documentation drift"
+                                    action={{
+                                        label: "Link Repository",
+                                        href: "https://github.com/apps/delta-docs/installations/new",
+                                        external: true
+                                    }}
+                                />
                             )}
                         </div>
 
@@ -297,7 +346,7 @@ export default function Dashboard() {
                             <div className="dashboard-repos-more">
                                 <Button
                                     variant="ghost"
-                                    className="w-full"
+                                    className="w-full text-deep-navy/70 hover:text-deep-navy hover:bg-deep-navy/10"
                                     onClick={() => setShowAllRepos(!showAllRepos)}
                                 >
                                     {showAllRepos ? 'Show Less' : `Show More (${reposList.length - 5} more)`}
