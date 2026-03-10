@@ -308,7 +308,7 @@ export default function Dashboard() {
                                         Manage Repos
                                     </Button>
                                 </Link>
-                                <a href="https://github.com/apps/delta-docs/installations/new">
+                                <a href="https://github.com/apps/testdelta/installations/new">
                                     <Button className="btn-primary-delta">
                                         <Plus className="size-4 mr-2" />
                                         Link Repository
